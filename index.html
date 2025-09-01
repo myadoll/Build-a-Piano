@@ -1,31 +1,47 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <script src="script.js" defer></script>
-    <title>Build a Piano </title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Simple Web Piano</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
-<body>  
-        <div class="piano">
-            <div data-note="C"class="key white"></div>
-            <div data-note="Db"class="key black"></div>
-            <div data-note="D"class="key white"></div>
-            <div data-note="Eb"class="key black"></div>
-            <div data-note="E"class="key white"></div>
-            <div data-note="F"class="key white"></div>
-            <div data-note="Gb"class="key black"></div>
-            <div data-note="G"class="key white"></div>
-            <div data-note="Ab"class="key black"></div>
-            <div data-note="A"class="key white"></div>
-            <div data-note="Bb"class="key black"></div>
-            <div data-note="B"class="key white"></div>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Web Piano</h1>
+      <p>Click the keys or use your keyboard: <strong>A W S E D F T G Y H U J</strong> (C–B).</p>
+    </header>
+
+    <div id="piano" class="piano" tabindex="0" aria-label="Piano keyboard">
+      <!-- White keys -->
+      <button class="key white" data-note="C4" data-key="A">A<br><span>C</span></button>
+      <button class="key black" data-note="C#4" data-key="W">W<br><span>C♯</span></button>
+      <button class="key white" data-note="D4" data-key="S">S<br><span>D</span></button>
+      <button class="key black" data-note="D#4" data-key="E">E<br><span>D♯</span></button>
+      <button class="key white" data-note="E4" data-key="D">D<br><span>E</span></button>
+      <button class="key white" data-note="F4" data-key="F">F<br><span>F</span></button>
+      <button class="key black" data-note="F#4" data-key="T">T<br><span>F♯</span></button>
+      <button class="key white" data-note="G4" data-key="G">G<br><span>G</span></button>
+      <button class="key black" data-note="G#4" data-key="Y">Y<br><span>G♯</span></button>
+      <button class="key white" data-note="A4" data-key="H">H<br><span>A</span></button>
+      <button class="key black" data-note="A#4" data-key="U">U<br><span>A♯</span></button>
+      <button class="key white" data-note="B4" data-key="J">J<br><span>B</span></button>
     </div>
-    <audioi9
 
+    <footer>
+      <p>Volume: <input id="volume" type="range" min="0" max="1" step="0.01" value="0.7" /></p>
+      <p>Wave: 
+        <select id="wave">
+          <option value="sine">sine</option>
+          <option value="square">square</option>
+          <option value="sawtooth">sawtooth</option>
+          <option value="triangle">triangle</option>
+        </select>
+      </p>
+    </footer>
+  </div>
 
-
+  <script src="script.js"></script>
 </body>
+</html>
