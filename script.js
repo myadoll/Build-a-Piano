@@ -1,11 +1,8 @@
+// Simple click-only Web Piano
 const ctx = new (window.AudioContext || window.webkitAudioContext)();
 const master = ctx.createGain();
 master.gain.value = 0.7;
 master.connect(ctx.destination);
-
-const waveSel = document.getElementById('wave');
-const vol = document.getElementById('volume');
-vol.addEventListener('input', e => master.gain.value = parseFloat(e.target.value));
 
 const NOTES = {
   'C4': 261.63, 'C#4': 277.18, 'D4': 293.66, 'D#4': 311.13,
@@ -13,61 +10,41 @@ const NOTES = {
   'G#4': 415.30, 'A4': 440.00, 'A#4': 466.16, 'B4': 493.88
 };
 
-const KEYMAP = {
-  'a':'C4','w':'C#4','s':'D4','e':'D#4','d':'E4','f':'F4',
-  't':'F#4','g':'G4','y':'G#4','h':'A4','u':'A#4','j':'B4'
-};
+function playNote(note) {
+  if (ctx.state !== 'running') {
+    ctx.resume().catch(() => {});
+  }
 
-const active = new Map();
-
-function startNote(note){
-  if(active.has(note)) return;
   const osc = ctx.createOscillator();
   const g = ctx.createGain();
-  osc.type = waveSel.value;
+
+  osc.type = 'sine';  // pure tone
   osc.frequency.value = NOTES[note];
-  g.gain.setValueAtTime(0, ctx.currentTime);
-  g.gain.linearRampToValueAtTime(0.9, ctx.currentTime + 0.01);
+
+  const now = ctx.currentTime;
+  g.gain.setValueAtTime(0, now);
+  g.gain.linearRampToValueAtTime(0.9, now + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+
   osc.connect(g).connect(master);
-  osc.start();
-  active.set(note, {osc, g});
-  setKeyActive(note, true);
+  osc.start(now);
+  osc.stop(now + 0.6);
 }
 
-function stopNote(note){
-  const node = active.get(note);
-  if(!node) return;
-  node.g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
-  node.osc.stop(ctx.currentTime + 0.1);
-  active.delete(note);
-  setKeyActive(note, false);
+function blinkKey(el) {
+  el.classList.add('active');
+  setTimeout(() => el.classList.remove('active'), 120);
 }
-
-function setKeyActive(note, on){
-  const el = [...document.querySelectorAll('.key')].find(k => k.dataset.note === note);
-  if(el) el.classList.toggle('active', on);
-}
-
-function keyFor(key){ return KEYMAP[key.toLowerCase()]; }
 
 document.querySelectorAll('.key').forEach(btn => {
   const note = btn.dataset.note;
-  btn.addEventListener('mousedown', () => startNote(note));
-  btn.addEventListener('mouseup',   () => stopNote(note));
-  btn.addEventListener('mouseleave',() => stopNote(note));
+  btn.addEventListener('click', () => {
+    playNote(note);
+    blinkKey(btn);
+  });
+  btn.addEventListener('touchstart', e => {
+    e.preventDefault();
+    playNote(note);
+    blinkKey(btn);
+  }, { passive:false });
 });
-
-window.addEventListener('keydown', e => {
-  if (e.repeat) return;
-  const note = keyFor(e.key);
-  if(note) startNote(note);
-});
-window.addEventListener('keyup', e => {
-  const note = keyFor(e.key);
-  if(note) stopNote(note);
-});
-
-// Needed because browsers block audio until interaction
-window.addEventListener('click', () => {
-  if (ctx.state !== 'running') ctx.resume();
-}, {once:true});
