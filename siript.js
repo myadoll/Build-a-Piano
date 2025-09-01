@@ -1,12 +1,8 @@
- // Click-only WebAudio piano (no keyboard listeners)
+// Simple click-only Web Piano
 const ctx = new (window.AudioContext || window.webkitAudioContext)();
 const master = ctx.createGain();
 master.gain.value = 0.7;
 master.connect(ctx.destination);
-
-const waveSel = document.getElementById('wave'); // optional; defaults to 'sine' if missing
-const vol = document.getElementById('volume');
-if (vol) vol.addEventListener('input', e => master.gain.value = parseFloat(e.target.value));
 
 const NOTES = {
   'C4': 261.63, 'C#4': 277.18, 'D4': 293.66, 'D#4': 311.13,
@@ -15,28 +11,24 @@ const NOTES = {
 };
 
 function playNote(note) {
-  // Resume audio context inside the user gesture (fixes autoplay restrictions)
   if (ctx.state !== 'running') {
-    // If resume fails (rare), just bail silently to avoid errors
     ctx.resume().catch(() => {});
   }
 
   const osc = ctx.createOscillator();
   const g = ctx.createGain();
 
-  // Use selected wave if present, otherwise default 'sine'
-  osc.type = waveSel ? waveSel.value : 'sine';
+  osc.type = 'sine';  // pure tone
   osc.frequency.value = NOTES[note];
 
   const now = ctx.currentTime;
-  // Simple pluck-like envelope (short click sound)
   g.gain.setValueAtTime(0, now);
-  g.gain.linearRampToValueAtTime(0.9, now + 0.01);     // quick attack
-  g.gain.exponentialRampToValueAtTime(0.0008, now + 0.35); // short decay
+  g.gain.linearRampToValueAtTime(0.9, now + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
 
   osc.connect(g).connect(master);
   osc.start(now);
-  osc.stop(now + 0.4); // stop after envelope ends
+  osc.stop(now + 0.6);
 }
 
 function blinkKey(el) {
@@ -50,11 +42,9 @@ document.querySelectorAll('.key').forEach(btn => {
     playNote(note);
     blinkKey(btn);
   });
-
-  // Optional: make touch feel snappy too
-  btn.addEventListener('touchstart', (e) => {
+  btn.addEventListener('touchstart', e => {
     e.preventDefault();
     playNote(note);
     blinkKey(btn);
-  }, { passive: false });
+  }, { passive:false });
 });
